@@ -76,7 +76,13 @@ wikiToJekyll:
   commit_and_push: false
 ```
 
-### Import
+If your site is a repository site (ie: living under user.github.io/repositoryName), **don't forget** to set your **baseurl:** parameter in your **_config.yml** file.
+
+```
+baseurl: '/repositoryName' # no trailing slash !
+```
+
+### Import your wiki
 
 Synchronizing your wiki can be done with the associated rake task :
 
@@ -93,6 +99,9 @@ or
 - launch a Jekyll build
 - convert wiki links to Jekyll links
 - optionally commit and push you code to you Jekyll repository
+
+This has been made as a rake task, because some may want to make a cron job with this.
+
 
 ## Jekyll pages integration
 
