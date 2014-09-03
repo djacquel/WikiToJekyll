@@ -1,5 +1,5 @@
-require "kramdown"
 require 'yaml'
+require 'uri'
 
 # use Jekyll configuration file
 CONFIG = YAML.load_file("_config.yml")
@@ -16,6 +16,15 @@ end
 # shortener to get configuration parameter
 def g(key)
   CONFIG['wikiToJekyll'][ key ]
+end
+
+
+def get_wiki_repository_url
+
+  derived_url = 'https://github.com/' + g('user_name') + '/' + g('repository_name') + '.wiki.git'
+
+  url = g('wiki_repository_url') || derived_url
+
 end
 
 # IMPORTANT ++++++++++++++++
@@ -99,23 +108,41 @@ end
 # synch repository wiki pages with Jekyll
 # needs a public wiki
 task :wiki do |t|
-
     check_configuration
-
     update_wiki_submodule
-
-    clean_wiki_folders
-
-    copy_wiki_pages
-
-    build_jekyll
-
+    Rake::Task[:wikibuild].execute
     if g('commit_and_push') == true
         deploy
     end
-
     puts "Wiki synchronisation success !"
+end
 
+# add wiki as a submodule
+task :wikisub do |t|
+
+  puts "adding wiki as submodule"
+  check_configuration
+  wiki_repository = get_wiki_repository_url
+  command = 'git submodule add ' + wiki_repository + ' ' + g('wiki_source')
+  command += ' && git submodule init'
+  command += ' && git submodule update'
+  puts 'command : ' + command
+
+  output = `#{command}`
+
+  if output.include? 'failed'
+    abort("submodule add failed : verify you configuration and that you wiki is public") # exit
+  end
+
+  puts "wiki submodule OK"
+end
+
+
+task :wikibuild do |t|
+  puts 'rake:wikibuild'
+  clean_wiki_folders
+  copy_wiki_pages
+  build_jekyll
 end
 
 

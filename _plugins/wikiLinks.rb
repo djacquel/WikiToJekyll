@@ -12,26 +12,12 @@ module Jekyll
       # Initialize all variables that will be needed by your new link converter
       def initialize(config = {})
 
-        raise 'Missing wiki configuration. Please configure wiki parameters in _config.yml' unless config['wiki']
-
-        conf = config['wiki']
-        conf['wiki_repository_url'] ||= conf['repository_url'] + '/wiki'
-
-        if conf['repository_url'].start_with?("git")
-          raise 'Do not use git@git: but https:// scheme for your wiki repository_url'
-        end
-
-        wiki_uri = URI.parse( conf['wiki_repository_url'] )
-
-        if conf['wiki_repository_url'].split('/').last != 'wiki'
-          raise 'Your wiki repository_url must end with /wiki'
-        end
-
+        raise 'Missing wiki configuration. Please configure wiki parameters in _config.yml' unless config['wikiToJekyll']
+        @conf = config['wikiToJekyll']
         # this our global var that will be used by our link converter
         $wikiDatas = {'conf'=>config, 'pages'=>Hash.new() }
 
       end
-
 
       # Initialize some variables that will be needed by your new link converter
       # As "site" is not available in initialize we do some work here
@@ -45,7 +31,7 @@ module Jekyll
 
         wiki_pages.each do |p|
 
-          jekyll_url = @conf['baseurl'] + '/' + @conf['wiki']['wiki_dest'] + '/' + p.basename + '.html'
+          jekyll_url = @conf['baseurl'] + '/' + @conf['wikiToJekyll']['wiki_dest'] + '/' + p.basename + '.html'
 
           $wikiDatas['pages'][p.basename] = {
                                   'possible_uris' => get_possible_uris(p),
@@ -55,12 +41,32 @@ module Jekyll
         end
       end
 
+      # return the wiki repository path : https://github.com/userName/repositoryName/wiki
+      # @param full boolean full if we need the full url - if false return the absolute path : /userName/repositoryName/wiki
+      def getWikiRepositoryUrl(full = true)
+
+        @host = 'https://github.com/'
+
+        if @conf['wikiToJekyll']['wiki_repository_url']
+          url = @conf['wikiToJekyll']['wiki_repository_url'].sub('.wiki.git', '') + '/wiki'
+        else
+          url = @host + @conf['wikiToJekyll']['user_name'] + '/' + @conf['wikiToJekyll']['repository_name'] + '/wiki'
+        end
+
+        if full == false
+          return url.sub(@host, '')
+        else
+          return url
+        end
+      end
+
       # Generates an array of possible uris for a wiki page
       # total number is :
       #   - number of path possible to generate a link to internal pages in a wiki
       #      [link text](https://github.com/userName/RepositoryName/wiki/Page-name)
       #      [link text](/userName/RepositoryName/wiki/Page-name)
       #      [link text](Page-name)
+      # time 2 because both with and w/o trailing slash work
       # time
       #   - the number of page's name forms
       #      page name
@@ -75,7 +81,7 @@ module Jekyll
       #      [link text](/userName/RepositoryName/wiki)
       def get_possible_uris(page)
 
-        @wiki_full_uri = $wikiDatas['conf']['wiki']['wiki_repository_url']
+        @wiki_full_uri = getWikiRepositoryUrl
 
         @uri = URI.parse(@wiki_full_uri)
 
@@ -95,9 +101,13 @@ module Jekyll
           @patterns += [
               # possible WORKING internal links patterns that can be found in wiki pages
               # [link text](https://github.com/userName/RepositoryName/wiki/Page-name)
-              @wiki_full_uri + '/'+ name,
+              @wiki_full_uri + '/' + name,
+              # [link text](https://github.com/userName/RepositoryName/wiki/Page-name/) trailing slash
+              @wiki_full_uri + '/' + name + '/',
               # [link text](/userName/RepositoryName/wiki/Page-name)
-              @uri.path + '/'+ name,
+              @uri.path + '/' + name,
+              # [link text](/userName/RepositoryName/wiki/Page-name/) trailing slash
+              @uri.path + '/' + name + '/',
               # [link text](Page-name)
               name
           ]
@@ -110,8 +120,12 @@ module Jekyll
               # home page direct uris
               # [link text](https://github.com/userName/RepositoryName/wiki)
               @wiki_full_uri,
+              # [link text](https://github.com/userName/RepositoryName/wiki) trailing slash
+              @wiki_full_uri + '/',
               # [link text](/userName/RepositoryName/wiki)
-              @uri.path
+              @uri.path,
+              # [link text](/userName/RepositoryName/wiki) trailing slash
+              @uri.path + '/'
           ]
         end
 

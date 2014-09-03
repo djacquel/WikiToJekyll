@@ -10,29 +10,25 @@ This composite plugin (rake task + plugin) allows you to import a Github wiki in
 ### Download code
 
 - Download the [zip archive here](https://github.com/djacquel/WikiToJekyll/archive/master.zip)
-- Unzip in an already existing Jekyll folder
-
-### Link your Wiki to your repository as a submodule
-
-```
-git submodule add https://github.com/userName/repositoryName.wiki.git
-git submodule init
-git submodule update
-```
+- Unzip **_plugins/** and **Rakefile** in an already existing Jekyll folder
 
 ### Configure
 
-Go to your **_config.yml** file and set you parameters for wiki import
-
+In **_config.yml**, set you parameters for wiki import
 
 ```
 ##
 # Parameters for WikiToJekyll
-#
-# Used by Rake::wiki and wikiLinks generator plugin
+# Used by Rake:wikisub, Rake:wiki and wikiLinks generator plugin
 ##
-
 wikiToJekyll:
+
+  # your user Github Name
+  user_name: djacquel
+
+  # your repository Name
+  repository_name: JekyllTest
+
   # set your remote name. 'origin' is the default name set
   # when you do a 'git init'
   # if you changed this name be sure to change this parameter
@@ -42,18 +38,10 @@ wikiToJekyll:
   # for a project, publication branch is gh-pages
   deploy_branch: "gh-pages"
 
-  # code repository url
-  # IMPORTANT: no git@github.com: in front
-  #            You MUST use the htpps:// url or deriving wiki url
-  #            will not generate a proper url for git submodule
-  #            and then cause an error on github
-  #            https://github.com/userName/repositoryName
-  repository_url: "https://github.com/userName/repositoryName"
-
-  # wiki url
+  # wiki repository url
   # if you live this blank, it will be derived from you code
-  # repository url
-  #   eg : wiki_repository_url = repository_url + '/wiki'
+  # user_name and repository_name
+  #   eg : wiki_repository_url = user_name/repository_name/wiki'
   #
   # If you're importing a wiki from another code repository
   # you MUST set this url
@@ -61,10 +49,13 @@ wikiToJekyll:
   # IMPORTANT: no git@github.com: in front
   #            You MUST use the htpps:// url or it will
   #            cause a submodule error on github
-  #            https://github.com/userName/repositoryName/wiki
-  wiki_repository_url:
+  #
+  # Example : https://github.com/userName/repositoryName.wiki.git
+
+  wiki_repository_url: # https://github.com/userName/repositoryName.wiki.git
 
   # wiki submodule folder
+  # the underscore makes sure that this folder is ignored by Jekyll
   wiki_source: "_wiki"
 
   # wiki Jekyll generated pages destination folder
@@ -80,26 +71,39 @@ If your site is a repository site (ie: living under user.github.io/repositoryNam
 baseurl: '/repositoryName' # no trailing slash !
 ```
 
-### Import your wiki
+### Link your Wiki to your repository as a submodule
 
-Synchronizing your wiki can be done with the associated rake task :
+**Once** you've configured Jekyll you can do
 
 ```
-rake wiki
+rake wikisub
+```
+
+or
+
+```
+git submodule add https://github.com/userName/repositoryName.wiki.git
+git submodule init
+git submodule update
+```
+
+### Building your wiki for first time
+
+Once submodule updated, you just have to build you wiki pages.
+
+```
+rake wikibuild
 ```
 
 This will :
 
 - cause errors if you've missed some of the install steps
+
 or
-- download you wiki pages
-- transform them to markdown pages with yaml front matter
+
+- transform downloaded wiki pages to markdown pages with yaml front matter
 - launch a Jekyll build
 - convert wiki links to Jekyll links
-- optionally commit and push you code to you Jekyll repository
-
-This has been made as a rake task, because some may want to make a cron job with this.
-
 
 ## Jekyll pages integration
 
@@ -116,6 +120,22 @@ A wiki menu can be easily generated with this markup :
   {% endfor %}
 </ul>
 ```
+## Synchronize your wiki
+
+Sometimes you'll want to sync your Jekyll site with wiki updates.
+Just :
+
+```
+rake wiki
+```
+- sync your wiki pages
+- transform them to markdown pages with yaml front matter
+- launch a Jekyll build
+- convert wiki links to Jekyll links
+- optionally commit and push you code to you Jekyll repository
+
+This has been made as a rake task, that's allows you to make a cron job with last command.
+
 
 ## Todo
 
@@ -127,4 +147,4 @@ The wiki mardown is a little different from the default Jekyll markdown.
 - list item
 - list item
 ```
-That renders in wiki but not in Jekyll.
+That renders in wiki but not in Jekyll. This because of missing new lines.
