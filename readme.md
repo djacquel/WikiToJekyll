@@ -3,18 +3,16 @@ This composite plugin (rake task + plugin) allows you to import a Github wiki in
 
 ## install
 
-### Download code
-
-
-### Copy code
-
-Unzip in an already existing Jekyll folder
-
 ### Create your wiki
 
 **Note** : your wiki MUST be public and have at least One page
 
-### Link your Wiki to your repository
+### Download code
+
+- Download the [zip archive here](https://github.com/djacquel/WikiToJekyll/archive/master.zip)
+- Unzip in an already existing Jekyll folder
+
+### Link your Wiki to your repository as a submodule
 
 ```
 git submodule add https://github.com/userName/repositoryName.wiki.git
