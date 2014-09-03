@@ -137,9 +137,9 @@ rake wiki
 This has been made as a rake task, that's allows you to make a cron job with last command.
 
 
-## Todo
+## Workarounds
 
-The wiki mardown is a little different from the default Jekyll markdown.
+The github wiki mardown is a little different from the default Jekyll markdown (kramdown).
 
 ```
 ... end of sentence
@@ -148,3 +148,5 @@ The wiki mardown is a little different from the default Jekyll markdown.
 - list item
 ```
 That renders in wiki but not in Jekyll. This because of missing new lines.
+
+In order to get your wiki page processed well, you can switch your markdown processor to redcarpet.
